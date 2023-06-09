@@ -6,22 +6,22 @@ create or replace PROCEDURE "AD_PRC_IMPOSTOS_XML" (
 ) AS
        PARAM_P_DTINI DATE;
        PARAM_P_DTFIM DATE;
-
+       
        V_RECORD  AD_IMPOSTOSXML%ROWTYPE;
     I         INT;
     P_COUNT   INT; 
     v_id int;
-
-
+       
+       
 BEGIN
 
-
+      
 
        PARAM_P_DTINI := ACT_DTA_PARAM(P_IDSESSAO, 'P_DTINI');
        PARAM_P_DTFIM := ACT_DTA_PARAM(P_IDSESSAO, 'P_DTFIM');
 
-
-
+      
+   
 BEGIN
 
 if (PARAM_P_DTFIM-PARAM_P_DTINI)>15 then
@@ -33,17 +33,17 @@ end if;
     from AD_IMPOSTOSXML;
     DELETE AD_IMPOSTOSXML where dtemi between PARAM_P_DTINI and PARAM_P_DTFIM;
     COMMIT;
-
-
-
+   
+    
+    
     FOR J IN (
         SELECT
             NUARQUIVO
         FROM
-            AD_TGFIXN_WSMICNFEXML  
+            TGFIXN
         WHERE
                 LENGTH(XML) > 0
-            AND AD_TGFIXN_WSMICNFEXML.TIPO = 'N'
+            AND TGFIXN.TIPO = 'N'
             AND ( TRUNC(DHEMISS) BETWEEN  PARAM_P_DTINI and PARAM_P_DTFIM )
         ORDER BY
             DHEMISS
@@ -57,7 +57,7 @@ end if;
                 TO_CHAR(DHEMISS, 'dd/mm/yyyy') AS DTEMI,
                 NUNOTA
             FROM
-                AD_TGFIXN_WSMICNFEXML
+                TGFIXN
             WHERE
                 NUARQUIVO = J.NUARQUIVO
         ) LOOP
@@ -94,12 +94,12 @@ end if;
                     COUNT(1)
                 INTO P_COUNT
                 FROM
-                    AD_TGFIXN_WSMICNFEXML "AD_TGFIXN_WSMICNFEXML",
-                    TABLE ( XMLSEQUENCE(EXTRACT(XMLTYPE(AD_TGFIXN_WSMICNFEXML.XML), '/nfeProc/NFe/infNFe/det['
+                    TGFIXN,
+                    TABLE ( XMLSEQUENCE(EXTRACT(XMLTYPE(TGFIXN.XML), '/nfeProc/NFe/infNFe/det['
                                                                      || I
                                                                      || ']/@nItem')) )
                 WHERE
-                    AD_TGFIXN_WSMICNFEXML.NUARQUIVO = D.NUARQUIVO;
+                    TGFIXN.NUARQUIVO = D.NUARQUIVO;
 
                 IF
                     P_COUNT = 0
@@ -291,25 +291,25 @@ end if;
                     EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/ICMS/ICMS90/pICMS'),
-
+                     
                    --------------------------------------------------------------
-
+ 
                     EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/ICMS/ICMSSN101/CSOSN'),
                     EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/ICMS/ICMSSN101/orig'),
-
+                                            
                                              EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/ICMS/ICMSST/CST'),
                     EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/ICMS/ICMSST/orig'),
-
-
-
+                                            
+                                            
+                                            
                     EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/ICMS/ICMSSN102/CSOSN'),
@@ -336,11 +336,11 @@ end if;
                     EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/ICMS/ICMSSN900/orig'),
-
-
+         
+                     
                    -----------------------------------------------------------    
-
-
+                 
+               
                     EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/PIS/PISAliq/CST'),
@@ -452,9 +452,9 @@ end if;
                     EXTRACTVALUE(VALUE(F1), '/infNFe/det['
                                             || I
                                             || ']/imposto/IPI/IPINT/CST') 
-
-
-
+            
+                   
+                   
                    --------------------------------------------------
                 INTO
                     V_RECORD.CODPRODFORN,
@@ -520,11 +520,11 @@ end if;
                     V_RECORD.P_PICMS90,
                     V_RECORD.P_ICMSSN101CSOSN,
                     V_RECORD.P_ICMSSN101ORIG,
-
+                    
                       V_RECORD.P_ICMSSTCST,
                       V_RECORD.P_ICMSSTorig,
-
-
+                    
+                    
                     V_RECORD.P_ICMSSN102CSOSN,
                     V_RECORD.P_ICMSSN102ORIG,
                     V_RECORD.P_ICMSSN201CSOSN,
@@ -535,8 +535,8 @@ end if;
                     V_RECORD.P_ICMSSN500ORIG,
                     V_RECORD.P_ICMSSN900CSOSN,
                     V_RECORD.P_ICMSSN900ORIG,
-
-
+                   
+			  
 			  V_RECORD.P_PISALIQCST,
                     V_RECORD.P_PISALIQVBC,
                     V_RECORD.P_PISALIQPPIS,
@@ -575,10 +575,10 @@ end if;
                     V_RECORD.P_IPITRIBVIPI,
                     V_RECORD.P_IPINTCST
                 FROM
-                    AD_TGFIXN_WSMICNFEXML "AD_TGFIXN_WSMICNFEXML",
-                    TABLE ( XMLSEQUENCE(EXTRACT(XMLTYPE(AD_TGFIXN_WSMICNFEXML.XML), '/nfeProc/NFe/infNFe')) ) F1
+                    TGFIXN,
+                    TABLE ( XMLSEQUENCE(EXTRACT(XMLTYPE(TGFIXN.XML), '/nfeProc/NFe/infNFe')) ) F1
                 WHERE
-                    AD_TGFIXN_WSMICNFEXML.NUARQUIVO = D.NUARQUIVO;
+                    TGFIXN.NUARQUIVO = D.NUARQUIVO;
                     ---------------------------------------------
 
 
@@ -605,7 +605,7 @@ end if;
                         NULL;
                 END;
 
-
+ 
 -----------------------replace ---------------
                 V_RECORD.QTDNEG:= REPLACE(V_RECORD.QTDNEG, '.', ',');
                 V_RECORD.P_VBC00 := REPLACE(V_RECORD.P_VBC00, '.', ',');
@@ -679,8 +679,8 @@ end if;
                 INSERT INTO AD_IMPOSTOSXML VALUES V_RECORD;
 
                 COMMIT;
-
-
+               
+                
                 I := I + 1;
             END LOOP;
 
