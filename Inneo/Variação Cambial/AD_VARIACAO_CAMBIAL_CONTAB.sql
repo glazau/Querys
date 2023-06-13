@@ -6,7 +6,7 @@ create or replace PROCEDURE "AD_VARIACAO_CAMBIAL_CONTAB" (
     ) AS
     
     FIELD_NUFIN 				NUMBER; 
-    FIELD_SEQUENCIA				NUMBER; 
+    FIELD_SEQUENCIA				NUMBER;  
     P_TEM_REG_NAC               INT; 
     P_TEM_REG_NAC_POSTERIOR     INT; 
     V_NUNOTA                    INT;
@@ -25,18 +25,21 @@ create or replace PROCEDURE "AD_VARIACAO_CAMBIAL_CONTAB" (
      FOR I IN  1..P_QTDLINHAS 
      LOOP 
         FIELD_NUFIN := ACT_INT_FIELD(P_IDSESSAO, I,'NUFIN'); 
-        FIELD_SEQUENCIA := ACT_INT_FIELD(P_IDSESSAO, I,'SEQUENCIA'); 
+        FIELD_SEQUENCIA := ACT_INT_FIELD(P_IDSESSAO, I,'SEQUENCIA');  
         PARAM_DATACONT := ACT_DTA_PARAM(P_IDSESSAO,'PARAM_DATACONT'); 
         PARAM_DATAMOV := ACT_DTA_PARAM(P_IDSESSAO,'PARAM_DATAMOV'); 
 
+        /*Necessário preencher o parametro com as datas.*/
         IF (PARAM_DATACONT IS NULL OR PARAM_DATAMOV IS NULL) THEN 
     	RAISE_APPLICATION_ERROR(-20101, 'Necessário preencher as datas solicitadas');
     	END IF;
 
+        /*A Data de contabilização/referencia só pode ser no primeiro dia de cada vez, para efetuar a contabilização*/
+
         IF PARAM_DATACONT <> TRUNC(PARAM_DATACONT,'MONTH') THEN 
     	RAISE_APPLICATION_ERROR(-20101, 'A contabilização só pode ser efetuada no primeiro dia de cada mês.');
-    	END IF;
-
+    	END IF; 
+        
         /*
         LISTANDO OS DADOS DA VARIAÇÃO CAMBIAL
         */
@@ -72,7 +75,7 @@ create or replace PROCEDURE "AD_VARIACAO_CAMBIAL_CONTAB" (
 
         IF CUR.VLRVARCAMBLANC_TRATADO = 0 THEN 
     	RAISE_APPLICATION_ERROR(-20101, 'A contabilização só pode ser efetuada com o valor da variação cambial evento diferente de zero.');
-    	END IF;
+    	END IF;  
 
         /* 
         TRATANDO CONTA 2 DO PARCEIRO PARA ATENDER A REGRA PERSONALIZADA
